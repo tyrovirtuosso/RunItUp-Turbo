@@ -1,8 +1,8 @@
-from Historical_Data import CoingeckoFetcher
+from Historical_Data.crypto import CoingeckoFetcher
 
-symbol = "dydx"
+symbol = "gmx"
 fetcher = CoingeckoFetcher(symbol=symbol)
-data = fetcher.fetch_data(start_date=fetcher.get_earliest_price())
+data = fetcher.fetch_raw_data(start_date=fetcher.get_earliest_price())
 
 print("Finsihed fetching data")
 print()

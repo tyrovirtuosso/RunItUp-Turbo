@@ -1,3 +1,39 @@
+"""
+This module provides utility functions for Historical Data Fetching
+
+Imports:
+- os: Module for interacting with the operating system.
+- datetime from datetime: Module for manipulating dates and times.
+- List, Optional from typing: Type hints for lists and optional values.
+- pandas as pd: Library for data manipulation and analysis.
+- logger from Historical_Data.log_config: Custom logger for logging messages.
+
+Function: export_to_csv
+- Method to export the data to a CSV file.
+- Parameters:
+    - df: Data to export as a DataFrame.
+    - file_name: Name of the CSV file to be created (default is 'data').
+    - cols_to_remove: Optional list of column names to remove before exporting.
+- Returns: None
+
+Function: get_earliest_common_date
+- Get the earliest common date among a dictionary of DataFrames.
+- Parameters:
+    - dataframes: Dictionary of DataFrames with a 'date' column.
+- Returns: The earliest common date as a datetime object.
+
+Function: slice_from_earliest_common_date
+- Slice the DataFrames from the earliest common date or a specified date.
+- Parameters:
+    - dataframes: Dictionary of DataFrames with a 'date' column.
+    - earliest_date: Optional earliest date to slice from, if not provided, it's calculated.
+- Returns: A dictionary of sliced DataFrames.
+
+Please note that the code relies on the pandas library for data manipulation
+and the log_config module for logging.
+"""
+
+
 # System and Standard Library Imports
 import os
 from datetime import datetime
