@@ -109,10 +109,11 @@ class CoingeckoFetcher:
         Returns:
             str: The constructed URL.
         """
-        (
-            f"{self.base_url}/coins/{symbol}/market_chart/range?"
-            f"vs_currency=usd&from={int(start_date.timestamp())}"
-            f"&to={int(end_date.timestamp())}?cache-bust={str(time.time())}"
+
+        return (
+            f"{self.base_url}/coins/{symbol}/market_chart/range?vs_currency=usd&from="
+            f"{int(start_date.timestamp())}&to={int(end_date.timestamp())}"
+            f"?cache-bust={str(time.time())}"
         )
 
     def extract_data_from_response(self, data: dict) -> pd.DataFrame:
