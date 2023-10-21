@@ -1,3 +1,40 @@
+"""
+This module provides VPN utility functions for Historical Data Fetching
+
+Imports:
+- os: Module for interacting with the operating system.
+- re: Module for working with regular expressions.
+- subprocess: Module for running shell commands.
+- time: Module for working with time.
+- pexpect: Library for automating interactive shell applications.
+- load_dotenv from dotenv: Library for loading environment variables from a .env file.
+- colored from termcolor: Library for adding color to text.
+- logger from Historical_Data.log_config: Custom logger for logging messages.
+
+Function: is_ping_successful
+- Check if a ping to 'google.com' is successful.
+- Returns: True if the ping is successful, False otherwise.
+
+Function: get_current_ip
+- Get the current IP address using ProtonVPN.
+- Returns: The current IP address or None if it's not found.
+
+Function: vpn_connect
+- Connect to ProtonVPN.
+- Returns: True if successfully connected, False otherwise.
+
+Function: vpn_disconnect
+- Disconnect from ProtonVPN.
+- Returns: None
+
+Main Execution:
+- Connects to ProtonVPN using vpn_connect function.
+- Disconnects from ProtonVPN using vpn_disconnect function.
+
+The code relies on the ProtonVPN command-line tool and the log_config module for logging.
+"""
+
+
 # System and Standard Library Imports
 import os
 import re

@@ -1,7 +1,37 @@
+"""
+This module fetches crypto data from Coingecko.
+
+Imports:
+- datetime: Module for manipulating dates and times.
+- time: Module for time-related functions.
+- List from typing: Type hint for a list.
+- pandas as pd: Library for data manipulation and analysis.
+- requests: Library for making HTTP requests.
+- termcolor from termcolor: Library for printing colored text.
+- tqdm from tqdm: Library for creating progress bars.
+
+Custom Modules:
+- log_config from Historical_Data.log_config: Custom module for configuring logging.
+- vpn_utils from Historical_Data.vpn_utils: Custom module for VPN-related utilities.
+
+Class: CoingeckoFetcher
+- __init__(self, symbol: str): Constructor method that initializes the CoingeckoFetcher object with a symbol parameter.
+- get_earliest_price(self, symbol: str) -> datetime.datetime: Retrieves the earliest price date for a given symbol.
+- date_ranges(self, start_date: datetime.datetime, end_date: datetime.datetime): Generates date ranges between start_date and end_date with a 90-day interval.
+- construct_request_url(self, symbol: str, start_date: datetime.datetime, end_date: datetime.datetime) -> str: Constructs the request URL for fetching historical data.
+- extract_data_from_response(self, data: dict) -> pd.DataFrame: Extracts data from the API response and returns it as a DataFrame.
+- make_api_request(self, url: str) -> pd.DataFrame: Makes an API request and retrieves historical data.
+- activate_vpn(self) -> bool: Activates a VPN connection and returns True if the connection is successful.
+- fetch_raw_data(self, symbol: str, start_date: datetime.datetime) -> pd.DataFrame: Fetches raw data for a given symbol and date range and combines it into a single DataFrame.
+- handle_connect_timeout(self): Handles a connection timeout error.
+- handle_http_error(self, err: Exception): Handles HTTP errors.
+
+Please note that the code relies on custom modules (log_config and vpn_utils) and external libraries (pandas, requests, termcolor, tqdm). The documentation for these modules and libraries is not provided in the code snippet.
+"""
+
 # Standard Library Imports
 import datetime
 import time
-from typing import List
 
 # Third-Party Library Imports
 import pandas as pd
@@ -9,8 +39,11 @@ import requests
 from termcolor import colored
 from tqdm import tqdm
 
-# Custom Module Imports
 from Historical_Data.log_config import logger
+
+# Custom Module Imports
+from Historical_Data.pre_processor import preprocess_dataframe
+from Historical_Data.validator import validate_dataframe
 from Historical_Data.vpn_utils import (
     get_current_ip,
     is_ping_successful,
@@ -189,19 +222,22 @@ class CoingeckoFetcher:
     @use_symbol
     def fetch_raw_data(
         self, symbol: str, start_date: datetime.datetime
-    ) -> List[pd.DataFrame]:
+    ) -> pd.DataFrame:
         """
-        Fetch raw data for a given symbol and date range.
+        Fetch raw data for a given symbol and date range and combine it into a single DataFrame.
 
         Args:
             symbol (str): The symbol.
             start_date (datetime.datetime): Start date.
 
         Returns:
-            List[pd.DataFrame]: List of raw data frames.
+            pd.DataFrame: Combined DataFrame of raw data.
         """
-        data = []
+        logger.info(f"Initiated Data Fetching for symbol {symbol} from {start_date}")
+        raw_data = []
         end_date = pd.to_datetime(pd.Timestamp.utcnow()).replace(tzinfo=None)
+        if isinstance(start_date, str):
+            start_date = pd.Timestamp(start_date)
         start_date = start_date.replace(minute=0, second=0, microsecond=0)
         end_date = end_date.replace(minute=0, second=0, microsecond=0)
 
@@ -219,31 +255,26 @@ class CoingeckoFetcher:
         ):
             logger.info(f"Fetching Raw Data of {symbol}: {i}/{num_requests}")
             url = self.construct_request_url(symbol, current_start, current_end)
-            data.append(self.make_api_request(url))
+            data = self.make_api_request(url)
+            raw_data.append(data)
 
         vpn_disconnect()
-        return data
 
-    @use_symbol
-    def fetch_data(
-        self, symbol: str, start_date: datetime.datetime
-    ) -> List[pd.DataFrame]:
-        """
-        Fetch historical data for a given symbol and date range.
-
-        Args:
-            symbol (str): The symbol.
-            start_date (datetime.datetime): Start date.
-
-        Returns:
-            List[pd.DataFrame]: List of historical data frames.
-        """
-        logger.info(f"Initiated Data Fetching for symbol {symbol} from {start_date}")
-        raw_data = self.fetch_raw_data(symbol, start_date)
         if raw_data is not None:
+            combined_data = pd.concat(raw_data, ignore_index=False)
+            combined_data = combined_data.rename_axis("timestamp")
+            combined_data = combined_data.reset_index()
+            combined_data["symbol"] = str(symbol)
+            combined_data["source"] = str(self.SOURCE)
+            combined_data["category"] = str(self.CATEGORY)
             logger.success(f"Data for symbol {symbol} fetched successfully!")
-            return raw_data
+            combined_data = preprocess_dataframe(combined_data)
+            if validate_dataframe(combined_data):
+                return combined_data
+            else:
+                raise ValueError
         logger.warning(f"Data for symbol {symbol} is None")
+        return pd.DataFrame()
 
     def handle_connect_timeout(self):
         sleep_time = 10
