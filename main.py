@@ -1,6 +1,6 @@
 from Historical_Data.crypto import CoingeckoFetcher
 
-symbol = "gmx"
+symbol = "mantle"
 fetcher = CoingeckoFetcher(symbol=symbol)
 data = fetcher.fetch_raw_data(start_date=fetcher.get_earliest_price())
 

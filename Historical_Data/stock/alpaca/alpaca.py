@@ -49,8 +49,11 @@ from alpaca.data.timeframe import TimeFrame
 from dotenv import load_dotenv
 from halo import Halo
 
-# Custom Module Imports
 from Historical_Data.log_config import logger
+from Historical_Data.pre_processor import preprocess_dataframe
+
+# Custom Module Imports
+from Historical_Data.validator import validate_dataframe
 
 
 def use_symbol(func):
@@ -193,7 +196,18 @@ class AlpacaFetcher:
                 spinner.stop()
                 df = bars.df
                 logger.success(f"Finished Fetching {symbol} stock data!")
-                return df
+
+                df = df.reset_index()
+                df["source"] = self.SOURCE
+                df["category"] = self.CATEGORY
+                df = df.drop(columns=["trade_count", "vwap"], axis=1)
+                df = preprocess_dataframe(df)
+
+                if validate_dataframe(df):
+                    return df
+                else:
+                    raise ValueError
+
             except KeyError as e:
                 logger.error(f"KeyError for stock {symbol}: {e}")
                 return pd.DataFrame()

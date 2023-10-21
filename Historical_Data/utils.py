@@ -1,3 +1,4 @@
+# noqa
 """
 This module provides utility functions for Historical Data Fetching
 
@@ -29,8 +30,7 @@ Function: slice_from_earliest_common_date
     - earliest_date: Optional earliest date to slice from, if not provided, it's calculated.
 - Returns: A dictionary of sliced DataFrames.
 
-Please note that the code relies on the pandas library for data manipulation
-and the log_config module for logging.
+Please note that the code relies on the pandas library for data manipulation and the log_config module for logging.
 """
 
 
@@ -54,9 +54,9 @@ def export_to_csv(
     """
     Method to export the data to a CSV file.
 
-    :param df: Data to export as a DataFrame.
-    :param file_name: Name of the CSV file to be created (default is 'data').
-    :param cols_to_remove: Optional list of column names to remove before exporting.
+    param df: Data to export as a DataFrame.
+    param file_name: Name of the CSV file to be created (default is 'data').
+    param cols_to_remove: Optional list of column names to remove before exporting.
 
     :return: None
     """

@@ -38,6 +38,7 @@ exclude = '''
 [tool.ruff]
 line-length = 99
 select = ["F", "E", "W", "Q", "I001"]
+ignore = ["E501"]
 exclude = [
     ".bzr",
     ".direnv",
