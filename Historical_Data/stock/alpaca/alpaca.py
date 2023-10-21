@@ -144,6 +144,14 @@ class AlpacaFetcher:
 
     @use_symbol
     def get_earliest_price(self, symbol: str) -> str:
+        """
+
+        Args:
+            symbol (str): The symbol to retrieve the earliest price for.
+
+        Returns:
+            A date string as Alpaca only supports 7yr 1hr data
+        """
         return "2010-01-01 00:00:00"  # Alpaca only supports 7yr 1hr data
 
     # Function to check if the market is open

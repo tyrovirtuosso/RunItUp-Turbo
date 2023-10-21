@@ -236,6 +236,8 @@ class CoingeckoFetcher:
         logger.info(f"Initiated Data Fetching for symbol {symbol} from {start_date}")
         raw_data = []
         end_date = pd.to_datetime(pd.Timestamp.utcnow()).replace(tzinfo=None)
+        if isinstance(start_date, str):
+            start_date = pd.Timestamp(start_date)
         start_date = start_date.replace(minute=0, second=0, microsecond=0)
         end_date = end_date.replace(minute=0, second=0, microsecond=0)
 

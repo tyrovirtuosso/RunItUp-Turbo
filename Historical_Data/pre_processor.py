@@ -1,5 +1,6 @@
 # Standard library imports
 import datetime
+import warnings
 
 # Third-party library imports
 import pandas as pd
@@ -68,12 +69,44 @@ def convert_columns_to_lowercase(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def convert_strings_to_lowercase(df):
+def convert_strings_to_lowercase(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Convert all string values in the DataFrame to lowercase.
+
+    Args:
+        df (DataFrame): The DataFrame to process.
+
+    Returns:
+        DataFrame: The DataFrame with string values converted to lowercase.
+
+    Example usage:
+    ```
+    df = convert_strings_to_lowercase(df)
+    ```
+    """
     df = df.map(lambda x: x.lower() if isinstance(x, str) else x)
     return df
 
 
-def enforce_data_type(df):
+def enforce_data_type(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Enforce data types for specific columns in the DataFrame.
+
+    Args:
+        df (DataFrame): The DataFrame to process.
+
+    Returns:
+        DataFrame: The DataFrame with enforced data types.
+
+    Example usage:
+    ```
+    df = enforce_data_type(df)
+    ```
+
+    This function enforces data types for the following columns:
+    - "symbol", "source", and "category" are converted to strings.
+    - "open", "high", "low", "close", and "volume" are converted to floating-point numbers.
+    """
     df["symbol"] = df["symbol"].astype(str)
     string_list = ["symbol", "source", "category"]
     float_list = ["open", "high", "low", "close", "volume"]
@@ -218,8 +251,19 @@ def interpolate_and_impute_missing_data(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: DataFrame with missing data imputed using linear interpolation.
     """
-    df = df.interpolate(method="linear")
-    df.ffill(inplace=True)
+
+    # Filter out the specific warning
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message="DataFrame.interpolate with object dtype is deprecated",
+            category=FutureWarning,
+        )
+
+        # Perform the interpolation
+        df = df.interpolate(method="linear")
+        df.ffill(inplace=True)
+
     return df
 
 
