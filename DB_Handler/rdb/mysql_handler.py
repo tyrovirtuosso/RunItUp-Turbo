@@ -2,7 +2,7 @@
 import time
 
 # Third-party Libraries
-from typing import Dict  # Type hint-related import
+from typing import Dict, List, Optional
 
 # Database
 import mysql.connector
@@ -53,6 +53,42 @@ class MySQL:
                 logger.error("Error, cannot connect to AWS db:", e)
                 logger.info(f"trying again after {sleep_time} seconds")
                 time.sleep(sleep_time)
+
+    def execute_post_query(
+        self, query: str, data: Optional[List[tuple]] = None
+    ) -> None:
+        """
+        Execute a post (insert/update) query with optional data.
+
+        Args:
+            query (str): The SQL query to execute.
+            data (Optional[List[tuple]]): Optional data to execute a parameterized query.
+
+        Returns:
+            None
+        """
+        if data:
+            self.cursor.executemany(query, data)
+        else:
+            self.cursor.execute(query)
+
+        self.conn.commit()
+        logger.success(f"Successfully executed post query: {query}")
+
+    def execute_get_query(self, query: str) -> List[tuple]:
+        """
+        Execute a get (select) query and return the results.
+
+        Args:
+            query (str): The SQL query to execute for fetching data.
+
+        Returns:
+            List[tuple]: A list of tuples containing the query results.
+        """
+        self.cursor.execute(query)
+        result = self.cursor.fetchall()
+        logger.success(f"Successfully executed get query: {query}")
+        return result
 
     def create_tables(self, table_creation_queries) -> None:
         """

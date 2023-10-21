@@ -8,3 +8,4 @@ database:
 
 system:
   development: true
+  base_path: /home/azureuser/RunItUp-Turbo/

@@ -100,9 +100,9 @@ class CoingeckoFetcher:
         except requests.exceptions.ConnectTimeout:
             self.handle_connect_timeout()
         except KeyError:
-            message = f"There is no {symbol} symbol in Coingecko API name"
-            logger.error(message)
-            return None
+            error_message = f"\033[93mUnsupported symbol-category: ('{symbol}','{self.CATEGORY}')\033[0m"
+            logger.error(error_message)
+            raise Exception(error_message)
 
     def date_ranges(self, start_date: datetime.datetime, end_date: datetime.datetime):
         """
