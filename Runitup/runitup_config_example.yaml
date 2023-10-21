@@ -1,0 +1,10 @@
+database:
+  type: mysql
+  host: host.amazonaws.com
+  port: 3306
+  username: admin
+  password: password
+  database: backtest_crypto_stock
+
+system:
+  development: true

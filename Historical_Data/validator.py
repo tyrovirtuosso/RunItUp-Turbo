@@ -1,6 +1,6 @@
 import pandas as pd
 
-from Historical_Data.log_config import logger
+from log_config import logger
 
 
 def validate_dataframe(df: pd.DataFrame) -> bool:

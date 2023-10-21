@@ -43,7 +43,7 @@ from typing import List, Optional
 import pandas as pd
 
 # Local Imports
-from Historical_Data.log_config import logger
+from log_config import logger
 
 
 def export_to_csv(

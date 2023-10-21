@@ -49,11 +49,11 @@ from alpaca.data.timeframe import TimeFrame
 from dotenv import load_dotenv
 from halo import Halo
 
-from Historical_Data.log_config import logger
 from Historical_Data.pre_processor import preprocess_dataframe
 
 # Custom Module Imports
 from Historical_Data.validator import validate_dataframe
+from log_config import logger
 
 
 def use_symbol(func):
