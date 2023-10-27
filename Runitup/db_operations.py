@@ -3,6 +3,7 @@ from typing import List, Set, Tuple, Union
 
 # Imports for Database Handling
 from DB_Handler.rdb.mysql_handler import MySQL
+from DB_Handler.rdb.postgre_handler import Postgre
 
 # Imports for Historical Data Handling (Crypto and Stock)
 from Historical_Data.crypto import CoingeckoFetcher
@@ -32,6 +33,15 @@ def initialize_db() -> Union[MySQL, None]:
         db_handler.create_tables(mysql_create_tables)
         db_handler.update_tables(mysql_update_tables)
         return db_handler
+
+    elif DB_PARAMS["type"].lower() == "postgre":
+        db_handler = Postgre(DB_PARAMS)
+
+        with open("Runitup/queries/postgre/create_table.sql", "r") as file:
+            create_table_script = file.read()
+        db_handler.execute_scripts(create_table_script)
+        return db_handler
+
     return None
 
 
