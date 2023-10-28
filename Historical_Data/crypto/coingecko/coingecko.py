@@ -39,9 +39,6 @@ import requests
 from termcolor import colored
 from tqdm import tqdm
 
-from Historical_Data.log_config import logger
-
-# Custom Module Imports
 from Historical_Data.pre_processor import preprocess_dataframe
 from Historical_Data.validator import validate_dataframe
 from Historical_Data.vpn_utils import (
@@ -50,6 +47,9 @@ from Historical_Data.vpn_utils import (
     vpn_connect,
     vpn_disconnect,
 )
+
+# Custom Module Imports
+from log_config import logger
 
 
 # Define a decorator to handle the 'symbol' parameter

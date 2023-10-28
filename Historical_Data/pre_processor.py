@@ -5,10 +5,9 @@ import warnings
 # Third-party library imports
 import pandas as pd
 
-from Historical_Data.log_config import logger
-
 # Custom module imports
 from Historical_Data.utils import export_to_csv
+from log_config import logger
 
 
 def preprocess_dataframe(df: pd.DataFrame) -> pd.DataFrame:
@@ -202,6 +201,7 @@ def resample_to_1_hour_intervals(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: Resampled DataFrame.
     """
+    df = df.sort_index()
     df = df.resample("1H").last()
     return df
 

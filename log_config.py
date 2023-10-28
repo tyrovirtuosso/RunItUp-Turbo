@@ -26,7 +26,7 @@ logger.remove()
 
 # Add a file handler to log messages to a file with rotation
 logger.add(
-    "Logs/Historical_Data/Historical_Data_{time:YYYY-MM-DD_HH-mm}.log",
+    "logs/Runitup-Turbo_{time:YYYY-MM-DD_HH-mm}.log",
     rotation="60 minute",
     level="INFO",
 )
