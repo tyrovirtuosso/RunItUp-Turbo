@@ -1,11 +1,13 @@
-# External libraries
-# Type hinting
+# Standard Library Imports
 from typing import Dict, List, Tuple, Union
 
+# Third-Party Library Imports
 import yaml
 
-# Custom or project-specific modules
+# Internal or Custom Imports
 from Runitup.symbols import BUCKET
+
+config_path = "Runitup/configs/runitup_config.yaml"
 
 
 def load_config(
@@ -24,19 +26,27 @@ def load_config(
         return yaml.safe_load(yaml_file)
 
 
-config_path = "Runitup/runitup_config.yaml"
 config = load_config(config_path)
-
 DEVELOPMENT_MODE: bool = config["system"]["development"] is True
 
-DB_PARAMS: Dict[str, Union[str, int]] = {
-    "type": config["db"]["type"],
-    "host": config["db"]["host"],
-    "port": config["db"]["port"],
-    "user": config["db"]["user"],
-    "password": config["db"]["password"],
-    "database": config["db"]["database"],
-}
+if DEVELOPMENT_MODE:
+    DB_PARAMS: Dict[str, Union[str, int]] = {
+        "type": config["db"]["type"],
+        "host": config["db"]["host"],
+        "port": config["db"]["port"],
+        "user": config["db"]["user"],
+        "password": config["db"]["password"],
+        "database": config["db"]["database"],
+    }
+else:
+    DB_PARAMS: Dict[str, Union[str, int]] = {
+        "type": config["prod_db"]["type"],
+        "host": config["prod_db"]["host"],
+        "port": config["prod_db"]["port"],
+        "user": config["prod_db"]["user"],
+        "password": config["prod_db"]["password"],
+        "database": config["prod_db"]["database"],
+    }
 
 
 def collect_unique_symbol_category_pairs(

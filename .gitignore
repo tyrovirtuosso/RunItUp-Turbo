@@ -130,5 +130,5 @@ cython_debug/
 
 # Project Specific
 Historical_Data/data
-Runitup/symbols.py
-Runitup/runitup_config.yaml
+Runitup/configs/runitup_config.yaml
+Runitup/symbols/symbols.py

@@ -47,7 +47,7 @@ from dotenv import load_dotenv
 from termcolor import colored
 
 # Local Imports
-from Historical_Data.log_config import logger
+from log_config import logger
 
 
 def is_ping_successful() -> bool:
