@@ -1,8 +1,10 @@
 # Standard Library Imports
+import urllib
 from typing import Dict, List, Tuple, Union
 
 # Third-Party Library Imports
 import yaml
+from sqlalchemy import create_engine
 
 # Internal or Custom Imports
 from Runitup.symbols import BUCKET
@@ -26,27 +28,35 @@ def load_config(
         return yaml.safe_load(yaml_file)
 
 
-config = load_config(config_path)
-DEVELOPMENT_MODE: bool = config["system"]["development"] is True
+def get_db_engine():
+    config = load_config(config_path)
+    if config["system"]["development"]:
+        db_config = config["db"]
+    else:
+        db_config = config["prod_db"]
 
-if DEVELOPMENT_MODE:
-    DB_PARAMS: Dict[str, Union[str, int]] = {
-        "type": config["db"]["type"],
-        "host": config["db"]["host"],
-        "port": config["db"]["port"],
-        "user": config["db"]["user"],
-        "password": config["db"]["password"],
-        "database": config["db"]["database"],
-    }
-else:
-    DB_PARAMS: Dict[str, Union[str, int]] = {
-        "type": config["prod_db"]["type"],
-        "host": config["prod_db"]["host"],
-        "port": config["prod_db"]["port"],
-        "user": config["prod_db"]["user"],
-        "password": config["prod_db"]["password"],
-        "database": config["prod_db"]["database"],
-    }
+    # Map the database type to the SQLAlchemy driver
+    db_type = db_config["type"].lower()
+
+    if db_type == "azure_db":
+        params = urllib.parse.quote_plus(
+            f"DRIVER={{{db_config['driver']}}};SERVER={db_config['server']};"
+            f"DATABASE={db_config['database']};UID={db_config['username']};PWD={db_config['password']}"
+        )
+        db_engine = create_engine(f"mssql+pyodbc:///?odbc_connect={params}")
+        return db_engine
+
+    elif db_type == "local-postgre":
+        conn_str = f"postgresql://{db_config['username']}:{db_config['password']}@{db_config['host']}/{db_config['database']}"
+        db_engine = create_engine(conn_str)
+        return db_engine
+
+    elif db_type == "neon-postgre":
+        conn_str = f"postgresql://{db_config['username']}:{db_config['password']}@{db_config['host']}/{db_config['database']}?sslmode=require"
+        db_engine = create_engine(conn_str)
+        return db_engine
+    else:
+        raise ValueError("Unsupported database type")
 
 
 def collect_unique_symbol_category_pairs(
@@ -71,3 +81,4 @@ def collect_unique_symbol_category_pairs(
 
 
 LOCAL_SYMBOLS: List[Tuple[str, str]] = collect_unique_symbol_category_pairs(BUCKET)
+DB_ENGINE = get_db_engine()

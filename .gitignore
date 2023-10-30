@@ -132,3 +132,9 @@ cython_debug/
 Historical_Data/data
 Runitup/configs/runitup_config.yaml
 Runitup/symbols/symbols.py
+*.pem
+*.tfstate
+*.env
+*.terraform
+*.ruff_cache
+*.tfplan

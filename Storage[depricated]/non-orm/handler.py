@@ -2,10 +2,7 @@ from .mysql import MySQL
 from .postgre import Postgre
 
 # Define a dictionary to map database types to their corresponding classes
-DB_HANDLERS = {
-    "mysql": MySQL,
-    "postgre": Postgre,
-}
+DB_HANDLERS = {"mysql": MySQL, "postgre": Postgre}
 
 
 def initialize_db(DB_PARAMS: dict) -> object:
