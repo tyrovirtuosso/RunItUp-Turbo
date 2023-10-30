@@ -41,12 +41,7 @@ from tqdm import tqdm
 
 from Historical_Data.pre_processor import preprocess_dataframe
 from Historical_Data.validator import validate_dataframe
-from Historical_Data.vpn_utils import (
-    get_current_ip,
-    is_ping_successful,
-    vpn_connect,
-    vpn_disconnect,
-)
+from Historical_Data.vpn_utils import is_ping_successful, vpn_connect, vpn_disconnect
 
 # Custom Module Imports
 from log_config import logger
@@ -185,7 +180,6 @@ class CoingeckoFetcher:
         """
         while True:
             try:
-                logger.info(f"Making API request with IP:{get_current_ip()}")
                 response = requests.get(url, timeout=5)
                 response.raise_for_status()
                 data = response.json()
