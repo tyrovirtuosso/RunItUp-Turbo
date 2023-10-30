@@ -5,54 +5,59 @@ import time
 # Third-Party Library Imports
 from pandas import Timestamp, to_datetime
 
-from Historical_Data.handler import fetch_and_insert_data
-from log_config import logger
-from Storage.handler import initialize_db
-
 # Internal or Custom Imports
-from .constants import DB_PARAMS, LOCAL_SYMBOLS
-from .queries import (
-    create_table_script,
-    get_latest_date_script,
-    get_symbol_category_script,
+from log_config import logger
+
+from .constants import LOCAL_SYMBOLS
+from .data_handling import fetch_and_insert_data
+from .db_models import (
+    create_models,
+    get_unique_symbol_category_pairs,
+    get_unique_symbols_and_categories_with_latest_date,
 )
 
 
-def fetch_missing_data(db_handler) -> None:
+def fetch_missing_data() -> None:
     """
-    Fetch missing data for symbols in LOCAL_SYMBOLS and insert it into the database.
+    Fetch missing data for local symbols and insert it into the database.
 
-    Args:
-        db_handler: Database handler for executing queries.
+    This function fetches data for local symbols that are not already in the database and inserts it into the database.
+
+    Returns:
+        None
     """
-    db_handler.execute_scripts(create_table_script, query_type="post")
-    db_symbols = db_handler.execute_scripts(
-        get_symbol_category_script, query_type="get"
-    )
+    # Create Models if not exists
+    create_models()
+
+    # Get Unique symbol, category pairs
+    db_symbols = get_unique_symbol_category_pairs()
+    logger.info("Unique symbol category pairs fetched")
+
     db_symbols_set = set((symbol, category) for symbol, category in db_symbols)
     LOCAL_SYMBOLS_set = set(LOCAL_SYMBOLS)
     missing_pairs = LOCAL_SYMBOLS_set - db_symbols_set
 
+    print(f"Missing Symbols from DB: {missing_pairs}")
     if missing_pairs:
         logger.info(f"Fetching missing symbols: {missing_pairs}")
         for item in missing_pairs:
             symbol, category = item
             try:
-                fetch_and_insert_data(symbol, category, db_handler)
+                fetch_and_insert_data(symbol, category)
             except Exception as e:
                 logger.error(e)
 
 
-def update_data(db_handler) -> None:
+def update_data() -> None:
     """
-    Update data for symbols in the database based on the latest date.
+    Update data for unique symbols and categories with the latest date.
 
-    Args:
-        db_handler: Database handler for executing queries.
+    This function updates data for unique symbols and categories with the latest date. It iterates through the symbols and updates their data if necessary.
+
+    Returns:
+        None
     """
-    latest_symbols = db_handler.execute_scripts(
-        get_latest_date_script, query_type="get"
-    )
+    latest_symbols = get_unique_symbols_and_categories_with_latest_date()
     total_items = len(latest_symbols)
     completed_items = 0
     max_bar_length = 50
@@ -77,12 +82,14 @@ def update_data(db_handler) -> None:
             and (end_date - start_date).total_seconds() >= ONE_HOUR
         ):
             try:
+                print()
+                print(start_date)
+                print(end_date)
+                print(f"Updating {symbol}")
                 logger.info(f"Updating {symbol}")
-                fetch_and_insert_data(
-                    symbol, category, db_handler, start_date=start_date
-                )
+                fetch_and_insert_data(symbol, category, start_date=start_date)
             except Exception as e:
-                logger.error(e)
+                logger.exception(e)
 
         completed_items += 1
         progress = int(completed_items / total_items * max_bar_length)
@@ -92,6 +99,8 @@ def update_data(db_handler) -> None:
 
 
 if __name__ == "__main__":
-    db_handler = initialize_db(DB_PARAMS)
-    fetch_missing_data(db_handler)
-    update_data(db_handler)
+    try:
+        fetch_missing_data()
+        update_data()
+    except Exception as e:
+        logger.error(f"An error occurred: {e}")

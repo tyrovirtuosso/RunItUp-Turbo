@@ -26,7 +26,7 @@ resource "azurerm_public_ip" "my_terraform_public_ip" {
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   allocation_method   = "Static"
-  ip_version = "IPv4"
+  ip_version          = "IPv4"
 }
 
 # Create Network Security Group and rule
@@ -127,6 +127,6 @@ resource "azurerm_linux_virtual_machine" "my_terraform_vm" {
     storage_account_uri = azurerm_storage_account.my_storage_account.primary_blob_endpoint
   }
 
-  depends_on = [ tls_private_key.secureadmin_ssh ]
+  depends_on = [tls_private_key.secureadmin_ssh]
 
 }
