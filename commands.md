@@ -56,6 +56,10 @@ export ARM_CLIENT_SECRET="xxx" <Password>`
 
 source .env
 
+# To get private key
+
+terraform output -raw tls_private_key > secureadmin_id_rsa.pem
+
 # To ssh into VM
 
 chmod 400 secureadmin_id_rsa.pem
