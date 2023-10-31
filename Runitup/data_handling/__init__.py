@@ -1,1 +1,0 @@
-from .fetch_and_insert_data import fetch_and_insert_data
