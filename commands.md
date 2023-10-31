@@ -1,6 +1,6 @@
 # To run program
 
-Run using `python -m Runitup.main` from the main repo
+Run using `python -m Runitup.main` from the main repo or `sudo python -m Runitup.main` when in VM
 
 # To run postgres in mac
 

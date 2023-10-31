@@ -1,4 +1,6 @@
 # Standard Library Imports
+import json
+import os
 import urllib
 from typing import Dict, List, Tuple, Union
 
@@ -80,5 +82,31 @@ def collect_unique_symbol_category_pairs(
     return list(unique_symbol_category_pairs)
 
 
+def get_current_folder_path() -> str:
+    """
+    Get the path to the current folder and create a JSON file if it doesn't exist.
+
+    Returns:
+        str: The path to the JSON file for storing Telegram notifications.
+    """
+
+    current_file_path = os.path.abspath(__file__)
+    directory_path = os.path.dirname(current_file_path)
+    TELEGRAM_NOTIFICATION_FILE_PATH = os.path.join(
+        directory_path, "telegram_notifications.json"
+    )
+
+    if not os.path.exists(TELEGRAM_NOTIFICATION_FILE_PATH):
+        # Create an empty dictionary
+        notifications = {}
+
+        # Save the empty dictionary to create the file
+        with open(TELEGRAM_NOTIFICATION_FILE_PATH, "w") as file:
+            json.dump(notifications, file, indent=4)
+
+    return TELEGRAM_NOTIFICATION_FILE_PATH
+
+
+TELEGRAM_NOTIFICATION_FILE_PATH = get_current_folder_path()
 LOCAL_SYMBOLS: List[Tuple[str, str]] = collect_unique_symbol_category_pairs(BUCKET)
 DB_ENGINE = get_db_engine()

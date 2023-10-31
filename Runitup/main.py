@@ -1,5 +1,7 @@
 # Standard Library Imports
+import asyncio
 import datetime
+import json
 import time
 
 # Third-Party Library Imports
@@ -8,10 +10,13 @@ from pandas import Timestamp, to_datetime
 # Internal or Custom Imports
 from log_config import logger
 
-from .constants import LOCAL_SYMBOLS
+from ._telegram import send_to_telegram
+from .constants import LOCAL_SYMBOLS, TELEGRAM_NOTIFICATION_FILE_PATH
 from .data_handling import fetch_and_insert_data
 from .db_models import (
     create_models,
+    get_row_count,
+    get_symbol_count,
     get_unique_symbol_category_pairs,
     get_unique_symbols_and_categories_with_latest_date,
 )
@@ -94,9 +99,33 @@ def update_data() -> None:
         time.sleep(0.1)
 
 
+def telegram_notify() -> None:
+    """
+    Update and send database information to a Telegram channel.
+    """
+    symbol_count = get_symbol_count()
+    row_count = get_row_count()
+
+    with open(TELEGRAM_NOTIFICATION_FILE_PATH, "r") as file:
+        notifications = json.load(file)
+
+    notifications["symbol_count"] = symbol_count
+    notifications["db_size"] = row_count
+    notifications["last_update"] = (
+        datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        + " UTC"
+    )
+
+    with open(TELEGRAM_NOTIFICATION_FILE_PATH, "w") as file:
+        json.dump(notifications, file, indent=4)
+
+    asyncio.run(send_to_telegram())
+
+
 if __name__ == "__main__":
     try:
         fetch_missing_data()
         update_data()
+        telegram_notify()
     except Exception as e:
         logger.error(f"An error occurred: {e}")

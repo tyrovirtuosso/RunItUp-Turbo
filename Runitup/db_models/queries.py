@@ -281,7 +281,6 @@ def get_unique_symbols_and_categories_with_latest_date() -> List[Tuple[str, str,
     for i in range(max_retries):
         session = Session()
         try:
-            # Define the query using SQLAlchemy
             query = (
                 session.query(
                     Symbol.symbol_name,
@@ -294,6 +293,64 @@ def get_unique_symbols_and_categories_with_latest_date() -> List[Tuple[str, str,
             )
             results = query.all()
             return results
+        except OperationalError as e:
+            logger.error(
+                f"Error executing query: {e}. Retrying... ({i+1}/{max_retries})"
+            )
+            session.rollback()
+        finally:
+            session.close()
+    logger.error(f"Failed to execute query after {max_retries} attempts.")
+
+
+def get_row_count():
+    """
+    Get the row count in the MarketData table.
+
+    Args:
+        session (Session): SQLAlchemy database session.
+        MarketData (class): SQLAlchemy model class for MarketData.
+
+    Returns:
+        int: The total row count, or -1 in case of failure.
+    """
+
+    Session = sessionmaker(bind=engine)
+    max_retries = 5
+    for i in range(max_retries):
+        session = Session()
+        try:
+            total_row_count = session.query(MarketData).count()
+            return total_row_count
+        except OperationalError as e:
+            logger.error(
+                f"Error executing query: {e}. Retrying... ({i+1}/{max_retries})"
+            )
+            session.rollback()
+        finally:
+            session.close()
+    logger.error(f"Failed to execute query after {max_retries} attempts.")
+
+
+def get_symbol_count():
+    """
+    Get the symbol count in the Symbol table.
+
+    Args:
+        session (Session): SQLAlchemy database session.
+        Symbol (class): SQLAlchemy model class for Symbol.
+
+    Returns:
+        int: The total symbol count, or -1 in case of failure.
+    """
+
+    Session = sessionmaker(bind=engine)
+    max_retries = 5
+    for i in range(max_retries):
+        session = Session()
+        try:
+            total_symbol_count = session.query(Symbol).count()
+            return total_symbol_count
         except OperationalError as e:
             logger.error(
                 f"Error executing query: {e}. Retrying... ({i+1}/{max_retries})"
