@@ -49,6 +49,9 @@ from termcolor import colored
 # Local Imports
 from log_config import logger
 
+load_dotenv()
+SUDO_VPN = os.environ.get("SUDO_VPN").lower() == "true"
+
 
 def is_ping_successful() -> bool:
     """
@@ -77,19 +80,28 @@ def get_current_ip() -> str:
     Returns:
         str: The current IP address or None if it's not found.
     """
-    load_dotenv()
-    sudo_password = os.environ.get("SUDO_PASSWORD")
-    if not sudo_password:
-        logger.error("SUDO_PASSWORD Environment Variable not found.")
-        return
+    if SUDO_VPN:
+        load_dotenv()
+        sudo_password = os.environ.get("SUDO_PASSWORD")
+        if not sudo_password:
+            logger.error("SUDO_PASSWORD Environment Variable not found.")
+            return
 
-    connect_command = ["sudo", "-S", "protonvpn", "s"]
-    result = subprocess.run(
-        connect_command,
-        input=f"{sudo_password}\n".encode("utf-8"),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-    )
+        connect_command = ["sudo", "-S", "protonvpn", "s"]
+        result = subprocess.run(
+            connect_command,
+            input=f"{sudo_password}\n".encode("utf-8"),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+    else:
+        connect_command = ["protonvpn", "s"]
+        result = subprocess.run(
+            connect_command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+
     ip_pattern = r"IP:\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
     match = re.search(ip_pattern, result.stdout.decode("utf-8"))
     if match:
@@ -109,11 +121,6 @@ def vpn_connect() -> bool:
     """
     print("Rate limit exceeded. Connecting to VPN...")
     logger.warning("Rate limit exceeded. Connecting to VPN...")
-    load_dotenv()
-    sudo_password = os.environ.get("SUDO_PASSWORD")
-    if not sudo_password:
-        logger.error("SUDO_PASSWORD Environment Variable not found.")
-        return
 
     connected = False
     original_ip = get_current_ip()
@@ -121,35 +128,61 @@ def vpn_connect() -> bool:
 
     while not connected:
         try:
-            # Connect to a random ProtonVPN server
-            connect_command = ["sudo", "-S", "protonvpn", "c", "-r"]
-            subprocess.run(
-                connect_command,
-                input=f"{sudo_password}\n".encode("utf-8"),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-            )
+            if SUDO_VPN:
+                load_dotenv()
+                sudo_password = os.environ.get("SUDO_PASSWORD")
+                if not sudo_password:
+                    logger.error("SUDO_PASSWORD Environment Variable not found.")
+                    return
+                # Connect to a random ProtonVPN server
+                connect_command = ["sudo", "-S", "protonvpn", "c", "-r"]
+                subprocess.run(
+                    connect_command,
+                    input=f"{sudo_password}\n".encode("utf-8"),
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                )
+            else:
+                connect_command = ["protonvpn", "c", "-r"]
+                subprocess.run(
+                    connect_command,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                )
+
             time.sleep(3)
             new_ip = get_current_ip()
             logger.info(f"\nNew IP address: {colored(new_ip, 'yellow')}")
+
             if new_ip != original_ip and new_ip is not None and is_ping_successful():
                 connected = True
                 logger.success(colored("Connected!", "green", attrs=["bold"]))
+                print(colored("Connected!", "green", attrs=["bold"]))
 
         except pexpect.exceptions.ExceptionPexpect as e:
             logger.error(f"Error connecting to ProtonVPN: {e}")
             logger.info("Reconnecting")
-            subprocess.check_output(
-                [
-                    "echo",
-                    f"{sudo_password}",
-                    "|",
-                    "sudo",
-                    "-S",
-                    "protonvpn",
-                    "reconnect",
-                ]
-            )
+
+            if SUDO_VPN:
+                subprocess.check_output(
+                    [
+                        "echo",
+                        f"{sudo_password}",
+                        "|",
+                        "sudo",
+                        "-S",
+                        "protonvpn",
+                        "reconnect",
+                    ]
+                )
+            else:
+                subprocess.check_output(
+                    [
+                        "echo",
+                        "protonvpn",
+                        "reconnect",
+                    ]
+                )
             logger.info("Reconnected")
 
     if connected:
@@ -161,15 +194,25 @@ def vpn_disconnect():
     Disconnect from ProtonVPN.
     """
     logger.info("Disconnecting VPN")
-    load_dotenv()
-    sudo_password = os.environ.get("SUDO_PASSWORD")
-    connect_command = ["sudo", "-S", "protonvpn", "d"]
-    subprocess.run(
-        connect_command,
-        input=f"{sudo_password}\n".encode("utf-8"),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-    )
+
+    if SUDO_VPN:
+        load_dotenv()
+        sudo_password = os.environ.get("SUDO_PASSWORD")
+        connect_command = ["sudo", "-S", "protonvpn", "d"]
+        subprocess.run(
+            connect_command,
+            input=f"{sudo_password}\n".encode("utf-8"),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+    else:
+        connect_command = ["protonvpn", "d"]
+        subprocess.run(
+            connect_command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+
     logger.success("VPN Disconnected!")
 
 

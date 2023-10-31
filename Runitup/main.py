@@ -82,10 +82,6 @@ def update_data() -> None:
             and (end_date - start_date).total_seconds() >= ONE_HOUR
         ):
             try:
-                print()
-                print(start_date)
-                print(end_date)
-                print(f"Updating {symbol}")
                 logger.info(f"Updating {symbol}")
                 fetch_and_insert_data(symbol, category, start_date=start_date)
             except Exception as e:

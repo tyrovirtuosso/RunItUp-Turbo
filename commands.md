@@ -64,3 +64,9 @@ terraform output -raw tls_private_key > secureadmin_id_rsa.pem
 
 chmod 400 secureadmin_id_rsa.pem
 ssh -i secureadmin_id_rsa.pem azureadmin@ip
+
+# Creating env path
+
+nano ~/.bashrc
+Add the following line at the end of the file: `alias sudo='sudo env PATH=$PATH'`
+source ~/.bashrc
